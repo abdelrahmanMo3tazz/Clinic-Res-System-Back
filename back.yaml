@@ -1,0 +1,43 @@
+# Node.js Backend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodejs-backend-deployment
+  labels:
+    app: nodejs-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nodejs-backend
+  template:
+    metadata:
+      labels:
+        app: nodejs-backend
+    spec:
+      containers:
+        - name: nodejs-backend-container
+          image: quay.io/clinicreservation/back
+          env:
+            - name: PORT
+              value: "5000"
+            - name: MONGO_URI
+              value: https://mongodb-service-omar-crt-dev.apps.sandbox-m4.g2pi.p1.openshiftapps.com/ #this is the name of the service that we created earlier
+            - name: DB_PORT
+              value: 27017
+          ports:
+            - containerPort: 5000 # Adjust the container port as needed
+---
+# Node.js Backend Service
+apiVersion: v1  
+kind: Service
+metadata:
+  name: nodejs-backend-service
+spec:
+  selector:
+    app: nodejs-backend
+  ports:
+    - protocol: TCP
+      port: 5000 # This is the port that the service will listen on inside the cluster
+      targetPort: 5000 # This is the port that the service will be exposed on outside the cluster
+  type: NodePort # Use NodePort for testing, consider LoadBalancer for production
